@@ -1,7 +1,6 @@
 @echo off
 echo ========================================================
 echo Iniciando copia de arquivos para o servidor remoto...
-echo (A senha sera solicitada apenas UMA vez)
 echo ========================================================
 
 REM Carregar configuracao local privada se existir (ex: deploy.local.bat)

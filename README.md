@@ -155,7 +155,7 @@ cp .env.example .env
 
 | Variável | Padrão | Descrição |
 | :--- | :--- | :--- |
-| `MSSQL_HOST` | `localhost` | Endereço do servidor MSSQL (pode incluir instância, ex: `10.5.1.6\MSSQL01`) |
+| `MSSQL_HOST` | `localhost` | Endereço do servidor MSSQL (pode incluir instância, ex: `SERVIDORMSSQL\MSSQL01`) |
 | `MSSQL_PORT` | `1433` | Porta de conexão do SQL Server |
 | `MSSQL_DATABASE` | - | Nome da base de dados de origem |
 | `MSSQL_USER` | `sa` | Usuário com permissão de leitura (`db_datareader`) no MSSQL |
@@ -212,7 +212,7 @@ O container Docker inclui o **Node.js 18** e o **Oracle Instant Client 19.22** p
 docker compose build
 
 # 2. Executar teste em uma única tabela
-docker compose run --rm converter npm run migrate:test -- --table=GER_REVENDA
+docker compose run --rm converter npm run migrate:test -- --table=TABLE_NAME
 
 # 3. Executar a carga FULL completa
 docker compose run --rm converter npm run migrate:full
@@ -240,7 +240,7 @@ Se você desenvolve na máquina Windows e executa as migrações em um servidor 
    Crie um arquivo chamado `deploy.local.bat` na raiz do projeto (ele já está no `.gitignore` para nunca ser enviado ao repositório):
    ```cmd
    @echo off
-   set DEST=usuario@10.5.1.83:~/Conversor-MSSQL-Oracle/
+   set DEST=usuario@servidor-docker:~/Conversor-MSSQL-Oracle/
    ```
 
 2. **Enviar os Arquivos:**
