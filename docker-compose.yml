@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  converter:
+    build: .
+    container_name: mssql-oracle-converter
+    command: tail -f /dev/null 
+    environment:
+      # MSSQL Configuration
+      MSSQL_HOST: ${MSSQL_HOST:-localhost}
+      MSSQL_PORT: ${MSSQL_PORT:-1433}
+      MSSQL_DATABASE: ${MSSQL_DATABASE}
+      MSSQL_USER: ${MSSQL_USER}
+      MSSQL_PASSWORD: ${MSSQL_PASSWORD}
+      
+      # Oracle Configuration
+      ORACLE_HOST: ${ORACLE_HOST:-localhost}
+      ORACLE_PORT: ${ORACLE_PORT:-1521}
+      ORACLE_SERVICE_NAME: ${ORACLE_SERVICE_NAME:-ORCL}
+      ORACLE_USER: ${ORACLE_USER}
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      ORACLE_CONNECTION_STRING: ${ORACLE_CONNECTION_STRING}
+      
+      # Migration Configuration
+      MIGRATION_MODE: ${MIGRATION_MODE:-full}
+      TARGET_TABLE: ${TARGET_TABLE}
+      BATCH_SIZE: ${BATCH_SIZE:-25000}
+      MAX_RETRIES: ${MAX_RETRIES:-3}
+      DISABLE_CONSTRAINTS: ${DISABLE_CONSTRAINTS:-true}
+      DISABLE_INDEXES: ${DISABLE_INDEXES:-true}
+      AUTO_RESUME: ${AUTO_RESUME:-true}
+      USE_TRUNCATE: ${USE_TRUNCATE:-true}
+      VALIDATE_DATA_TYPES: ${VALIDATE_DATA_TYPES:-false}
+      AUTO_ADD_COLUMNS: ${AUTO_ADD_COLUMNS:-true}
+      FAST_RELOAD_THRESHOLD: ${FAST_RELOAD_THRESHOLD:-50000}
+      INCREMENTAL_LOOKBACK_MINUTES: ${INCREMENTAL_LOOKBACK_MINUTES:-30}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    
+    volumes:
+      - ./logs:/app/logs
+      - ./checkpoints:/app/checkpoints
+      - ./fixes:/app/fixes
+    
+    networks:
+      - migration-network
+
+networks:
+  migration-network:
+    driver: bridge

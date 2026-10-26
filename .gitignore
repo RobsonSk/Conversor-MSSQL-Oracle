@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+build/
+
+# Environment and sensitive configuration
+.env
+.env.*
+!.env.example
+*.local.bat
+deploy.local.bat
+
+# Logs and runtime migration data
+logs/
+log/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Checkpoints and state files
+checkpoints/
+
+# Generated Fixes & SQL corrective scripts
+fixes/
+
+# Oracle Instant Client & local archives
+instantclient_*/
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# IDE, OS & editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Test & coverage
+coverage/
+.nyc_output/
