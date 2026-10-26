@@ -11,6 +11,7 @@
     "migrate:incremental": "ts-node src/index.ts --mode incremental",
     "migrate:test": "ts-node src/index.ts --mode test",
     "migrate:resume": "ts-node src/index.ts --mode resume",
+    "migrate:create-ddl": "ts-node src/scripts/create-ddl.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

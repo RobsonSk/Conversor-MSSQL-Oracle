@@ -194,10 +194,22 @@ ALTER USER SEU_USUARIO QUOTA UNLIMITED ON USERS;
 GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE SEQUENCE TO SEU_USUARIO;
 ```
 
-### 2. Criar a Estrutura de Tabelas (DDL)
-A ferramenta transfere os **dados** entre bancos. A estrutura de tabelas vazias deve ser criada previamente no Oracle. Você pode:
-- Exportar o DDL de um schema modelo via DBeaver / Oracle SQL Developer e executar no novo usuário; **ou**
-- Deixar a opção `AUTO_ADD_COLUMNS=true` para o conversor adicionar colunas que eventualmente faltem na estrutura.
+### 2. Criar a Estrutura de Tabelas (DDL Automático do MSSQL)
+Caso a base Oracle esteja **totalmente limpa (vazia)** ou você precise gerar o DDL de tabelas, PKs e FKs a partir do MSSQL, o conversor possui o comando automatizado:
+
+```bash
+# Extrai o DDL do MSSQL, gera o script ./ddl/oracle_schema.sql e aplica no Oracle (se a base estiver limpa ou com --apply)
+docker compose run --rm converter npm run migrate:create-ddl
+
+# Forçar a aplicação no Oracle mesmo se já existirem outras tabelas:
+docker compose run --rm converter npm run migrate:create-ddl -- --apply
+
+# Gerar DDL apenas para uma tabela específica:
+docker compose run --rm converter npm run migrate:create-ddl -- --table=GER_REVENDA
+```
+
+> [!NOTE]
+> **Detecção Automática:** Ao executar o comando `migrate:full`, caso a base Oracle esteja vazia (0 tabelas), o conversor detecta automaticamente, extrai o DDL do MSSQL, monta as tabelas, PKs e FKs no Oracle e inicia a carga de dados sem necessidade de intervenção manual!
 
 ---
 
@@ -211,22 +223,25 @@ O container Docker inclui o **Node.js 18** e o **Oracle Instant Client 19.22** p
 # 1. Construir a imagem Docker
 docker compose build
 
-# 2. Executar teste em uma única tabela
+# 2. Gerar e aplicar a estrutura DDL (caso a base Oracle esteja limpa)
+docker compose run --rm converter npm run migrate:create-ddl
+
+# 3. Executar teste em uma única tabela
 docker compose run --rm converter npm run migrate:test -- --table=TABLE_NAME
 
-# 3. Executar a carga FULL completa
+# 4. Executar a carga FULL completa
 docker compose run --rm converter npm run migrate:full
 
-# 4. Executar carga incremental (somente dados recentes)
+# 5. Executar carga incremental (somente dados recentes)
 docker compose run --rm converter npm run migrate:incremental -- --since="2026-07-26 15:00:00"
 
-# 5. Retomar migração interrompida
+# 6. Retomar migração interrompida
 docker compose run --rm converter npm run migrate:resume
 
-# 6. Gerar scripts de correção para linhas com erro
+# 7. Gerar scripts de correção para linhas com erro
 docker compose run --rm converter npm run analyze-errors
 
-# 7. Re-inserir linhas pendentes após aplicar correções
+# 8. Re-inserir linhas pendentes após aplicar correções
 docker compose run --rm converter npm run retry-pending
 ```
 

@@ -17,6 +17,7 @@ import { Table } from '../models/table.model';
 import { logger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { TypeMapper } from '../utils/type-mapper';
+import { ddlService } from '../services/ddl.service';
 
 export class DataConversionMigration {
   private session: Conversion;
@@ -151,6 +152,26 @@ export class DataConversionMigration {
 
       // Connect to both databases
       await this.connectToDatabases();
+
+      // Check if Oracle database is completely clean (0 user tables)
+      const isClean = await ddlService.isOracleClean();
+      if (isClean && migrationConfig.autoCreateTables) {
+        logger.warn(
+          'Oracle database is completely clean (0 tables found). Automatically generating and applying DDL from MSSQL...',
+          'DataConversionMigration'
+        );
+        const targetTable = migrationConfig.mode === 'test' ? migrationConfig.targetTable : undefined;
+        const tablesMeta = await ddlService.extractMetadata(targetTable);
+        if (tablesMeta.length > 0) {
+          const ddlResult = ddlService.generateOracleDDL(tablesMeta);
+          ddlService.saveDDLToFile('./ddl/oracle_schema.sql', ddlResult.sqlScript);
+          const applyResult = await ddlService.applyDDLToOracle(ddlResult, { filterExisting: false });
+          logger.info(
+            `Clean Oracle setup complete: created ${applyResult.tablesCreated} tables, ${applyResult.pksCreated} PKs, ${applyResult.fksCreated} FKs.`,
+            'DataConversionMigration'
+          );
+        }
+      }
 
       // Load or create checkpoint
       let checkpoint = await this.loadCheckpoint();
@@ -308,8 +329,29 @@ export class DataConversionMigration {
 
     try {
       // Fetch columns and metadata that exist in the target Oracle table
-      const oracleMeta = await oracleConnector.getTableColumnsMetadata(table.name);
-      const oracleColumns = Array.from(oracleMeta.keys());
+      let oracleMeta = await oracleConnector.getTableColumnsMetadata(table.name);
+      let oracleColumns = Array.from(oracleMeta.keys());
+
+      if (oracleColumns.length === 0 && migrationConfig.autoCreateTables) {
+        logger.info(
+          `Target table ${table.name} does not exist in Oracle database. Auto-creating table structure from MSSQL...`,
+          'DataConversionMigration'
+        );
+        try {
+          const meta = await ddlService.extractMetadata(table.name);
+          if (meta.length > 0) {
+            const ddlResult = ddlService.generateOracleDDL(meta);
+            await ddlService.applyDDLToOracle(ddlResult, { filterExisting: true });
+            oracleMeta = await oracleConnector.getTableColumnsMetadata(table.name);
+            oracleColumns = Array.from(oracleMeta.keys());
+          }
+        } catch (err) {
+          logger.warn(
+            `Could not auto-create table ${table.name} in Oracle: ${(err as Error).message}`,
+            'DataConversionMigration'
+          );
+        }
+      }
 
       if (oracleColumns.length === 0) {
         logger.warn(

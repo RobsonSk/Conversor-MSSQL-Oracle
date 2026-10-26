@@ -25,6 +25,7 @@ checkpoints/
 
 # Generated Fixes & SQL corrective scripts
 fixes/
+ddl/
 
 # Oracle Instant Client & local archives
 instantclient_*/

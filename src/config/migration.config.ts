@@ -22,6 +22,7 @@ export interface MigrationConfig {
   errorLogTable: string;
   concurrency: number;
   autoAddColumns: boolean;
+  autoCreateTables: boolean;
   useTruncate: boolean;
   dateColumns: string[];
   fastReloadThreshold: number;
@@ -94,6 +95,7 @@ export const migrationConfig: MigrationConfig = {
   errorLogTable: 'migration_errors',
   concurrency: parseInt(cliConcurrency || process.env.CONCURRENCY || '4', 10),
   autoAddColumns: process.env.AUTO_ADD_COLUMNS !== 'false',
+  autoCreateTables: process.env.AUTO_CREATE_TABLES !== 'false',
   useTruncate: process.env.USE_TRUNCATE !== 'false',
   dateColumns: process.env.DATE_COLUMNS
     ? process.env.DATE_COLUMNS.split(',').map((c) => c.trim().toUpperCase())
